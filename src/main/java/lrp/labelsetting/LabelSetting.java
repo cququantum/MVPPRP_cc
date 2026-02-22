@@ -260,15 +260,15 @@ public class LabelSetting {
 		FUL = new ArrayList<>();
 		FTL = new ArrayList<>();
 		for(int i = 0; i < inst.N; i++){
-			FUL.add(new ArrayList<>(10000));
-			FTL.add(new ArrayList<>(10000));
+			FUL.add(new ArrayList<Label>(10000));
+			FTL.add(new ArrayList<Label>(10000));
 		}
 
 		BUL = new ArrayList<>();
 		BTL = new ArrayList<>();
 		for(int i = 0; i < inst.N; i++){
-			BUL.add(new ArrayList<>(10000));
-			BTL.add(new ArrayList<>(10000));
+			BUL.add(new ArrayList<Label>(10000));
+			BTL.add(new ArrayList<Label>(10000));
 		}
 
 		Label flabel = new Label();
