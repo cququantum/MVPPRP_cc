@@ -316,7 +316,7 @@ public final class Instance {
         }
     }
 
-    /** e_{ivt}: holding cost accumulated from period v to t-1 (your definition). */
+    /** e_{ivt}: holding cost accumulated from period v to t-1 (aligned with reformulationModel.tex). */
     public double e(int i, int v, int t) {
         if (i < 1 || i > n) throw new IllegalArgumentException("i must be in 1..n");
         if (t < 1 || t > l + 1) throw new IllegalArgumentException("t must be in 1..l+1");
@@ -325,10 +325,11 @@ public final class Instance {
         double h = this.hi[i];
 
         if (v == 0) {
-            // e_{i0t} = h_i * sum_{j=0..t-1} (I_{i0} + sum_{r=1..j} s_ir)
-            //         = h_i * [ t*I_{i0} + sum_{j=0..t-1} prefixS[i][j] ]
-            double sumPrefix0To = cumPrefix[i][t - 1];
-            return h * (t * Ii0[i] + sumPrefix0To);
+            // e_{i0t} = h_i * sum_{j=1..t-1} (I_{i0} + sum_{r=1..j} s_ir)
+            //         = h_i * [ (t-1)*I_{i0} + sum_{j=1..t-1} prefixS[i][j] ]
+            // Since prefixS[i][0] = 0, cumPrefix[i][t-1] equals sum_{j=1..t-1} prefixS[i][j].
+            double sumPrefix1To = cumPrefix[i][t - 1];
+            return h * ((t - 1) * Ii0[i] + sumPrefix1To);
         } else {
             // e_{ivt} = h_i * sum_{j=v+1..t-1} (sum_{r=v+1..j} s_ir)
             //         = h_i * [ sum_{j=v+1..t-1} prefixS[i][j] - (t-v-1)*prefixS[i][v] ]

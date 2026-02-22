@@ -72,9 +72,6 @@ public class CvrpSubproblem {
         }
 
         int m = active.size();
-        if (m >= Integer.SIZE - 1) {
-            throw new IloException("Too many active customers for bitmask-based CVRP subproblem: " + m);
-        }
         int[] localToGlobal = new int[m];
         double[] demand = new double[m];
         for (int idx = 0; idx < m; idx++) {
@@ -87,6 +84,11 @@ public class CvrpSubproblem {
                 res.lpCost = Double.POSITIVE_INFINITY;
                 return res;
             }
+        }
+
+        if (m >= Integer.SIZE - 1) {
+            solveExactFallbackArcModel(ins, localToGlobal, demand, res);
+            return res;
         }
 
         RoutePool routes = buildRoutePool(ins, localToGlobal, demand);
@@ -118,6 +120,132 @@ public class CvrpSubproblem {
             res.mu[localToGlobal[idx]] = lp.coverDuals[idx];
         }
         return res;
+    }
+
+    private static void solveExactFallbackArcModel(Instance ins, int[] localToGlobal, double[] demand, Result res) throws IloException {
+        int m = localToGlobal.length;
+        int nodeCount = m + 2; // 0=start depot, 1..m=customers, m+1=end depot
+        int end = m + 1;
+
+        try (IloCplex cplex = new IloCplex()) {
+            cplex.setParam(IloCplex.Param.TimeLimit, CplexConfig.TIME_LIMIT_SEC);
+            cplex.setParam(IloCplex.Param.MIP.Tolerances.MIPGap, CplexConfig.MIP_GAP);
+            cplex.setOut(null);
+            cplex.setWarning(null);
+
+            IloNumVar[][] x = new IloNumVar[nodeCount][nodeCount];
+            IloNumVar[] u = new IloNumVar[nodeCount];
+
+            for (int i = 0; i < nodeCount; i++) {
+                u[i] = cplex.numVar(0.0, ins.Q, "u_" + i);
+            }
+            cplex.addEq(u[0], 0.0, "u_depot");
+
+            for (int i = 0; i < nodeCount; i++) {
+                for (int j = 0; j < nodeCount; j++) {
+                    if (i == j) {
+                        continue;
+                    }
+                    x[i][j] = cplex.boolVar("x_" + i + "_" + j);
+                    if (!isLocalRoutingArc(i, j, end)) {
+                        cplex.addEq(x[i][j], 0.0, "InvalidArc_" + i + "_" + j);
+                    }
+                }
+            }
+
+            IloLinearNumExpr obj = cplex.linearNumExpr();
+            for (int i = 0; i < nodeCount; i++) {
+                for (int j = 0; j < nodeCount; j++) {
+                    if (i == j || x[i][j] == null) {
+                        continue;
+                    }
+                    if (!isLocalRoutingArc(i, j, end)) {
+                        continue;
+                    }
+                    obj.addTerm(localArcCost(ins, localToGlobal, i, j, end), x[i][j]);
+                }
+            }
+            cplex.addMinimize(obj);
+
+            for (int c = 1; c <= m; c++) {
+                IloLinearNumExpr in = cplex.linearNumExpr();
+                IloLinearNumExpr out = cplex.linearNumExpr();
+                for (int j = 0; j < nodeCount; j++) {
+                    if (j != c && x[j][c] != null) {
+                        in.addTerm(1.0, x[j][c]);
+                    }
+                    if (j != c && x[c][j] != null) {
+                        out.addTerm(1.0, x[c][j]);
+                    }
+                }
+                cplex.addEq(in, 1.0, "CoverIn_" + c);
+                cplex.addEq(out, 1.0, "CoverOut_" + c);
+            }
+
+            IloLinearNumExpr depart = cplex.linearNumExpr();
+            IloLinearNumExpr back = cplex.linearNumExpr();
+            for (int c = 1; c <= m; c++) {
+                depart.addTerm(1.0, x[0][c]);
+                back.addTerm(1.0, x[c][end]);
+            }
+            cplex.addEq(depart, back, "RouteCountBalance");
+            cplex.addLe(depart, ins.K, "RouteCountLimit");
+
+            double bigM = Math.max(ins.bigM, ins.Q);
+            for (int i = 0; i < nodeCount; i++) {
+                for (int j = 0; j < nodeCount; j++) {
+                    if (i == j || x[i][j] == null || !isLocalRoutingArc(i, j, end)) {
+                        continue;
+                    }
+                    IloLinearNumExpr mtz = cplex.linearNumExpr();
+                    mtz.addTerm(1.0, u[j]);
+                    mtz.addTerm(-1.0, u[i]);
+                    mtz.addTerm(-bigM, x[i][j]);
+                    double rhs = -bigM;
+                    if (i >= 1 && i <= m) {
+                        rhs += demand[i - 1];
+                    }
+                    cplex.addGe(mtz, rhs, "MTZ_" + i + "_" + j);
+                }
+            }
+
+            boolean solved = cplex.solve();
+            String status = cplex.getStatus().toString();
+            if (status.startsWith("Optimal")) {
+                res.feasible = true;
+                res.optCost = cplex.getObjValue();
+                // No dual information from this fallback; disable dual-cut generation for this period.
+                res.lpCost = Double.NaN;
+                res.dur_mu = 0.0;
+                return;
+            }
+            if (status.startsWith("Infeasible")) {
+                res.feasible = false;
+                res.optCost = Double.POSITIVE_INFINITY;
+                res.lpCost = Double.POSITIVE_INFINITY;
+                return;
+            }
+            throw new IloException("CVRP fallback subproblem not solved to proven optimality: " + status + ", solved=" + solved);
+        }
+    }
+
+    private static boolean isLocalRoutingArc(int i, int j, int end) {
+        if (i == j) {
+            return false;
+        }
+        if (i == end) {
+            return false;
+        }
+        if (j == 0) {
+            return false;
+        }
+        return !(i == 0 && j == end);
+    }
+
+    private static double localArcCost(Instance ins, int[] localToGlobal, int i, int j, int end) {
+        int gi = (i == 0) ? 0 : (i == end ? ins.n + 1 : localToGlobal[i - 1]);
+        int gj = (j == 0) ? 0 : (j == end ? ins.n + 1 : localToGlobal[j - 1]);
+        return ins.c[gi][gj];
     }
 
     private static RoutePool buildRoutePool(Instance ins, int[] localToGlobal, double[] demand) {

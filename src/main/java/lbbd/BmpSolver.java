@@ -447,11 +447,7 @@ public final class BmpSolver {
     }
 
     private static double holdingCostOnArc(Instance ins, int i, int v, int t) {
-        double e = ins.e(i, v, t);
-        if (v == 0) {
-            return e - ins.hi[i] * ins.Ii0[i];
-        }
-        return e;
+        return ins.e(i, v, t);
     }
 
     private static void configure(IloCplex cplex) throws IloException {

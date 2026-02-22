@@ -300,14 +300,7 @@ public final class ReformulationModelSolver {
     }
 
     private static double holdingCostOnArc(Instance ins, int i, int v, int t) {
-        double e = ins.e(i, v, t);
-        if (v == 0) {
-            // Align with corrected model.tex:
-            // e_{i0t} should sum j=1..t-1, while Instance.e uses j=0..t-1.
-            // Therefore subtract one h_i * I_{i0}.
-            return e - ins.hi[i] * ins.Ii0[i];
-        }
-        return e;
+        return ins.e(i, v, t);
     }
 
     private static void configure(IloCplex cplex) throws IloException {
