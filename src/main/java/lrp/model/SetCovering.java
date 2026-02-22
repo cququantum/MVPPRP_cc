@@ -264,9 +264,7 @@ public class SetCovering {
             lpc = cplex.getObjValue();
             return true;
         }else{
-            System.out.println("SetCovering is infeasible !!!");
-            System.exit(0);
-            return false;
+            throw new IllegalStateException("SetCovering solve failed (infeasible or no solution).");
         }
     }
 

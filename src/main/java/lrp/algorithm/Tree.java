@@ -305,13 +305,13 @@ public final class Tree {
 		}
 
 		if(ans){
-			if(_lpc > cple_obj){
-				System.out.println(" node error !! ");
-				System.out.println(node.fid1);
-				System.out.println(node.fid2);
-				System.exit(0);
+				if(_lpc > cple_obj){
+					System.out.println(" node error !! ");
+					System.out.println(node.fid1);
+					System.out.println(node.fid2);
+					throw new IllegalStateException("debug node bound check failed");
+				}
 			}
 		}
-	}
 
 }

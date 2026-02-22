@@ -53,8 +53,7 @@ public class CapSep2 {
 	/**
 	 *
 	 */
-	public HashSet<Long> hashI;
-	public HashSet<Long> hashII;
+	public HashSet<String> hashState;
 
 	/**
 	 * 空构造函数
@@ -134,12 +133,12 @@ public class CapSep2 {
 				}
 				long tI = (I | conI.get(i)) & (~tSI);
 				long tII = (II | conII.get(i)) & (~tSII);
-				if(hashI.contains(tSI) && hashII.contains(tSII))
+				String stateKey = stateKey(tSI, tSII);
+				if(hashState.contains(stateKey))
 					continue;
 				cut.add(i);
 
-				hashI.add(tSI);
-				hashII.add(tSII);
+				hashState.add(stateKey);
 
 				recursive(y, tSI, tSII, cut, i, sq, v, depth + 1, tI, tII);
 				cut.remove(cut.size() - 1);
@@ -157,8 +156,7 @@ public class CapSep2 {
 		conI = new ArrayList<>();
 		conII = new ArrayList<>();
 		markS = new ArrayList<>();
-		hashI = new HashSet<>();
-		hashII = new HashSet<>();
+		hashState = new HashSet<>();
 		for(int i = 0; i < n; i++){
 			long mark = 0x01;
 			long I = 0x00;
@@ -194,6 +192,10 @@ public class CapSep2 {
 		long SII = 0x00;
 
 		recursive(map, SI, SII, cut, 0, 0, 0, 0, I, II);
+	}
+
+	private static String stateKey(long si, long sii) {
+		return si + ":" + sii;
 	}
 	
 }

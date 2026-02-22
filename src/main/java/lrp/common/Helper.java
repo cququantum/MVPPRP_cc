@@ -64,11 +64,10 @@ public class Helper {
 			for(int j = 1; j < solution.get(i).size() - 1; j++){
 				int id = solution.get(i).get(j);
 				cap += inst.q[id];
-				int temp = visit[id]++;
-				if(temp > 1){
-					System.out.println("multiple visit!!!" + id);
-					System.exit(0);
-				}
+					int temp = visit[id]++;
+					if(temp > 1){
+						throw new IllegalStateException("multiple visit!!!" + id);
+					}
 			}
 			if(cap > inst.Q){
 				System.out.println("capacity error !!!" + cap + " " + inst.Q);
@@ -101,10 +100,9 @@ public class Helper {
 				continue;
 			int depot_id = routes.get(0).get(0);
 			depots.add(depot_id);
-			if(routes.size() > inst.para.MaxVehicleNumber){
-				System.out.println("Vehicle Number Exceed !!! " + i + " " + routes.size() + " " + inst.para.MaxVehicleNumber);
-				System.exit(0);
-			}
+				if(routes.size() > inst.para.MaxVehicleNumber){
+					throw new IllegalStateException("Vehicle Number Exceed !!! " + i + " " + routes.size() + " " + inst.para.MaxVehicleNumber);
+				}
 
 			if (routes.size() == 0) {
 				continue;
@@ -178,12 +176,12 @@ public class Helper {
 			// assign all base station once
 			ArrayList<Integer> assi = entry.getValue();
 			for(int i = 0; i < assi.size(); i++){
-				a[assi.get(i)]++;
-				if(a[i] > 1) {
-					System.out.println("a station is assigned more than once !!!" + a[i] + "times , " + i + " " + assi);
-					for (Map.Entry<Integer, ArrayList<Integer>> entry1 : assign.entrySet()) {
-						System.out.println(entry1);
-					}
+					a[assi.get(i)]++;
+					if(a[assi.get(i)] > 1) {
+						System.out.println("a station is assigned more than once !!!" + a[assi.get(i)] + "times , " + assi.get(i) + " " + assi);
+						for (Map.Entry<Integer, ArrayList<Integer>> entry1 : assign.entrySet()) {
+							System.out.println(entry1);
+						}
 					return false;
 				}
 			}

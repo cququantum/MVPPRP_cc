@@ -107,8 +107,7 @@ public class Node implements Comparable<Node>{
 
         // check klb & lub
         if(klb > kub){
-            System.out.println("incompatible vehicle bound>>>" + klb + " " + kub);
-            System.exit(0);
+            throw new IllegalStateException("incompatible vehicle bound>>> " + klb + " " + kub);
         }
 
 		// check infeasible arc
@@ -121,23 +120,21 @@ public class Node implements Comparable<Node>{
 			for(int j = 0; j < column.size() - 1; j++){
 				int id1 = column.get(j);
 				int id2 = column.get(j + 1);
-				if(forbid[id1][id2]){
-					System.out.println("forbid arc>>>" + id1 + " " + id2 + " " + column);
-					System.exit(0);
-				}
+					if(forbid[id1][id2]){
+						throw new IllegalStateException("forbid arc>>> " + id1 + " " + id2 + " " + column);
+					}
 			}
 		}
 
 		// check the solvability
-		if(solve){
-			SetCovering model = new SetCovering();
-			model.construct(inst.N, inst.D[inst.map[0]], klb, kub,false);
-			model.add_column(column_set, column_cost, column_capacity);
-			if(model.cplex.solve() == false){
-				System.out.println("node solvable error");
-				System.exit(0);
+			if(solve){
+				SetCovering model = new SetCovering();
+				model.construct(inst.N, inst.D[inst.map[0]], klb, kub,false);
+				model.add_column(column_set, column_cost, column_capacity);
+				if(model.cplex.solve() == false){
+					throw new IllegalStateException("node solvable error");
+				}
 			}
-		}
     }
 
     public void clear() {

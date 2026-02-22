@@ -425,11 +425,10 @@ public class LabelSetting {
 						costs.add(new_label.t + inst.t[new_label.id][0]);
 						rcs.add(new_label.rc + inst.t[new_label.id][0] - amu[new_label.id][0]);
 						capacities.add((double)new_label.q);
-						route_hash.add(route);
-						if(check_route(route) == false){
-							System.out.println("get set: " + get_set(label.VI, label.VII));
-							System.exit(0);
-						}
+							route_hash.add(route);
+							if(check_route(route) == false){
+								throw new IllegalStateException("label setting forward route error, set=" + get_set(label.VI, label.VII));
+							}
 						if(routes.size() >= target_size)
 							return;
 					}
@@ -506,12 +505,11 @@ public class LabelSetting {
 						costs.add(new_label.t + inst.t[0][new_label.id]);
 						rcs.add(new_label.rc + inst.t[0][new_label.id] - amu[0][new_label.id]);
 						capacities.add((double)new_label.q);
-						route_hash.add(route);
-						boolean ret = check_route(route);
-						if(ret == false){
-							System.out.println("get set: " + get_set(label.VI, label.VII));
-							System.exit(0);
-						}
+							route_hash.add(route);
+							boolean ret = check_route(route);
+							if(ret == false){
+								throw new IllegalStateException("label setting backward route error, set=" + get_set(label.VI, label.VII));
+							}
 						if(routes.size() >= target_size)
 							return;
 					}
@@ -588,11 +586,10 @@ public class LabelSetting {
 							route_hash.add(route);
 
 							// elementary
-							boolean ret = check_route(route);
-							if(ret == false){
-								System.out.println("label setting route error ");
-								System.exit(0);
-							}
+								boolean ret = check_route(route);
+								if(ret == false){
+									throw new IllegalStateException("label setting joined route error");
+								}
 						}
 
 						if(routes.size() >= target_size)

@@ -65,6 +65,19 @@ public final class OriginalModelSolver {
                 }
             }
 
+            // Enforce arc set A used in the mathematical model:
+            // no arc enters start depot 0, no arc leaves return depot n+1, and no direct 0->n+1 arc.
+            for (int t = 1; t <= l; t++) {
+                for (int i = 0; i < nodeCount; i++) {
+                    for (int j = 0; j < nodeCount; j++) {
+                        if (i == j || isRoutingArc(i, j, n)) {
+                            continue;
+                        }
+                        cplex.addEq(x[i][j][t], 0.0, "InvalidArc_" + i + "_" + j + "_" + t);
+                    }
+                }
+            }
+
             IloLinearNumExpr obj = cplex.linearNumExpr();
             for (int t = 1; t <= l; t++) {
                 for (int i = 0; i < nodeCount; i++) {
@@ -228,6 +241,9 @@ public final class OriginalModelSolver {
                         if (i == j) {
                             continue;
                         }
+                        if (!isRoutingArc(i, j, n)) {
+                            continue;
+                        }
                         IloLinearNumExpr mtz = cplex.linearNumExpr();
                         mtz.addTerm(1.0, u[j][t]);
                         mtz.addTerm(-1.0, u[i][t]);
@@ -257,6 +273,19 @@ public final class OriginalModelSolver {
 
     private static boolean isPickupNode(int node, int n) {
         return node >= 1 && node <= n;
+    }
+
+    private static boolean isRoutingArc(int i, int j, int n) {
+        if (i == j) {
+            return false;
+        }
+        if (i == n + 1) {
+            return false;
+        }
+        if (j == 0) {
+            return false;
+        }
+        return !(i == 0 && j == n + 1);
     }
 
     private static void configure(IloCplex cplex) throws IloException {

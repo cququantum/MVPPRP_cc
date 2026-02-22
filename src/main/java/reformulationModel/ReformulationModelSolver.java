@@ -61,6 +61,18 @@ public final class ReformulationModelSolver {
                 }
             }
 
+            // Enforce arc set A used in the reformulation model.
+            for (int t = 1; t <= l; t++) {
+                for (int i = 0; i < nodeCount; i++) {
+                    for (int j = 0; j < nodeCount; j++) {
+                        if (i == j || isRoutingArc(i, j, n)) {
+                            continue;
+                        }
+                        cplex.addEq(x[i][j][t], 0.0, "InvalidArc_" + i + "_" + j + "_" + t);
+                    }
+                }
+            }
+
             for (int i = 1; i <= n; i++) {
                 for (int t = 1; t <= l + 1; t++) {
                     for (int v = ins.pi[i][t]; v <= t - 1; v++) {
@@ -239,6 +251,9 @@ public final class ReformulationModelSolver {
                         if (i == j) {
                             continue;
                         }
+                        if (!isRoutingArc(i, j, n)) {
+                            continue;
+                        }
                         IloLinearNumExpr mtz = cplex.linearNumExpr();
                         mtz.addTerm(1.0, u[j][t]);
                         mtz.addTerm(-1.0, u[i][t]);
@@ -269,6 +284,19 @@ public final class ReformulationModelSolver {
 
     private static boolean isPickupNode(int node, int n) {
         return node >= 1 && node <= n;
+    }
+
+    private static boolean isRoutingArc(int i, int j, int n) {
+        if (i == j) {
+            return false;
+        }
+        if (i == n + 1) {
+            return false;
+        }
+        if (j == 0) {
+            return false;
+        }
+        return !(i == 0 && j == n + 1);
     }
 
     private static double holdingCostOnArc(Instance ins, int i, int v, int t) {

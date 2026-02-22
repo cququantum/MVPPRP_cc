@@ -245,6 +245,12 @@ public class CapModel {
 				cap_rights.remove(i);
 				cap_lefts.remove(i);
 				cap_duals.remove(i);
+				if(i < cap_slack.size()){
+					cap_slack.remove(i);
+				}
+				if(i < cap_slack_value.size()){
+					cap_slack_value.remove(i);
+				}
 				i--;
 			}
 		}
