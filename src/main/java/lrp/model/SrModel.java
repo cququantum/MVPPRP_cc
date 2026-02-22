@@ -104,7 +104,7 @@ public final class SrModel {
 		neg_index = new ArrayList<>();
 		node_index = new ArrayList<>();
 		for(int i = 0; i < n; i++){
-			node_index.add(new ArrayList<>());
+			node_index.add(new ArrayList<Integer>());
 		}
 	}
 

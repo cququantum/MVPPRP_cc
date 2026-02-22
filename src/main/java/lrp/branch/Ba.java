@@ -198,19 +198,19 @@ public final class Ba {
 		ArrayList<ArrayList<ArrayList<Double>>> r_costs = new ArrayList<>();
 		ArrayList<ArrayList<ArrayList<Double>>> r_capacities = new ArrayList<>();
 		for(int i = 0; i < inst.N; i++){
-			left_matrix.add(new ArrayList<>());
-			right_matrix.add(new ArrayList<>());
-			l_costs.add(new ArrayList<>());
-			r_costs.add(new ArrayList<>());
-			l_capacities.add(new ArrayList<>());
-			r_capacities.add(new ArrayList<>());
+			left_matrix.add(new ArrayList<ArrayList<ArrayList<Integer>>>());
+			right_matrix.add(new ArrayList<ArrayList<ArrayList<Integer>>>());
+			l_costs.add(new ArrayList<ArrayList<Double>>());
+			r_costs.add(new ArrayList<ArrayList<Double>>());
+			l_capacities.add(new ArrayList<ArrayList<Double>>());
+			r_capacities.add(new ArrayList<ArrayList<Double>>());
 			for(int j = 0; j < inst.N; j++){
-				left_matrix.get(i).add(new ArrayList<>());
-				right_matrix.get(i).add(new ArrayList<>());
-				l_costs.get(i).add(new ArrayList<>());
-				r_costs.get(i).add(new ArrayList<>());
-				l_capacities.get(i).add(new ArrayList<>());
-				r_capacities.get(i).add(new ArrayList<>());
+				left_matrix.get(i).add(new ArrayList<ArrayList<Integer>>());
+				right_matrix.get(i).add(new ArrayList<ArrayList<Integer>>());
+				l_costs.get(i).add(new ArrayList<Double>());
+				r_costs.get(i).add(new ArrayList<Double>());
+				l_capacities.get(i).add(new ArrayList<Double>());
+				r_capacities.get(i).add(new ArrayList<Double>());
 			}
 		}
 
