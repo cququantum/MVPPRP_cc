@@ -168,7 +168,17 @@ public final class Instance {
         this.P00 = opt.P00;
         this.hp = opt.hp;
         this.Lp = (opt.Lp > 0) ? opt.Lp : this.L0;
-        this.bigM = (opt.bigM > 0) ? opt.bigM : this.Q;
+        // Default Big-M must be valid for both routing MTZ and inventory linking constraints.
+        // Using Q is too small for inventory constraints in the original model.
+        if (opt.bigM > 0) {
+            this.bigM = opt.bigM;
+        } else {
+            double maxSupplierInv = 0.0;
+            for (int i = 1; i <= n; i++) {
+                maxSupplierInv = Math.max(maxSupplierInv, this.Ii0[i] + this.Li[i]);
+            }
+            this.bigM = Math.max(this.Q, Math.max(this.L0, maxSupplierInv));
+        }
 
         // Build s_{it} from demand, and s_{i,l+1}=0
         this.s = new double[n + 1][l + 2];

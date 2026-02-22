@@ -34,6 +34,7 @@ public class CvrpSubproblem {
 
     private static final class SpSolveResult {
         boolean feasible;
+        String status;
         double objective;
         double[] coverDuals;
         double vehicleDual;
@@ -71,6 +72,9 @@ public class CvrpSubproblem {
         }
 
         int m = active.size();
+        if (m >= Integer.SIZE - 1) {
+            throw new IloException("Too many active customers for bitmask-based CVRP subproblem: " + m);
+        }
         int[] localToGlobal = new int[m];
         double[] demand = new double[m];
         for (int idx = 0; idx < m; idx++) {
@@ -241,8 +245,16 @@ public class CvrpSubproblem {
             boolean solved = cplex.solve();
             String status = cplex.getStatus().toString();
             boolean optimal = status.startsWith("Optimal");
+            ret.status = status;
 
-            ret.feasible = solved && optimal;
+            if (optimal) {
+                ret.feasible = true;
+            } else if (status.startsWith("Infeasible")) {
+                ret.feasible = false;
+            } else {
+                throw new IloException("CVRP subproblem not solved to proven optimality (integral=" + integral + "): " + status);
+            }
+
             if (!ret.feasible) {
                 ret.objective = Double.POSITIVE_INFINITY;
                 return ret;

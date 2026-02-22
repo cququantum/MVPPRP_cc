@@ -52,7 +52,8 @@ public final class BmpSolver {
 
                 String status = cplex.getStatus().toString();
                 if (!status.startsWith("Optimal")) {
-                    return buildResult("LbbdModel", true, cplex, startNs);
+                    return buildIncompleteResult("LbbdModel", cplex, startNs,
+                            "LBBD incomplete: BMP solve status=" + status);
                 }
 
                 CurrentSolution current = extractCurrentSolution();
@@ -473,6 +474,18 @@ public final class BmpSolver {
         double bestBound = safeBestBound(cplex);
         double gap = safeGap(cplex);
         return new SolveResult(modelName, solved, optimal, status, objective, bestBound, gap, sec);
+    }
+
+    private static SolveResult buildIncompleteResult(String modelName, IloCplex cplex, long startNs, String statusText) throws IloException {
+        double sec = (System.nanoTime() - startNs) / 1_000_000_000.0;
+        double objective = Double.NaN;
+        try {
+            objective = cplex.getObjValue();
+        } catch (IloException ignored) {
+        }
+        double bestBound = safeBestBound(cplex);
+        double gap = safeGap(cplex);
+        return new SolveResult(modelName, true, false, statusText, objective, bestBound, gap, sec);
     }
 
     private static double safeBestBound(IloCplex cplex) {

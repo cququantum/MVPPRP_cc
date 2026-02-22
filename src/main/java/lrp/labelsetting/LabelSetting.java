@@ -182,11 +182,11 @@ public class LabelSetting {
 			while(f_limit + b_limit < inst.Q + 1e-6){
 				//System.out.println("limit: " + flimit + " " + blimit);
 //				System.out.println("forward start..");
-				f_extend(inst.para.time_limit - (System.nanoTime() - inst.para.start_time) / 1e9, f_limit, gen_routes, gen_rcs, gen_costs, gen_capacities, route_hash);
+                    f_extend(inst.para.time_limit, f_limit, gen_routes, gen_rcs, gen_costs, gen_capacities, route_hash);
 				if(gen_routes.size() >= target_size || (System.nanoTime() - inst.para.start_time) / 1e9 > inst.para.time_limit)
 					break;
 //				System.out.println("backward start..");
-				b_extend( inst.para.time_limit - (System.nanoTime() - inst.para.start_time) / 1e9, b_limit, gen_routes, gen_rcs, gen_costs, gen_capacities, route_hash);
+                    b_extend(inst.para.time_limit, b_limit, gen_routes, gen_rcs, gen_costs, gen_capacities, route_hash);
 				if(gen_routes.size() >= target_size || (System.nanoTime() - inst.para.start_time) / 1e9 > inst.para.time_limit)
 					break;
 
@@ -211,7 +211,7 @@ public class LabelSetting {
 					bul += BUL.get(i).size();
 //				System.out.println("labels number:\t" + ful + "\t" + ftl + "\t" + bul + "\t" + btl);
 //				System.out.println("join start..");
-				best_route = join( inst.para.time_limit - (System.nanoTime() - inst.para.start_time) / 1e9, gen_routes, gen_rcs, gen_costs, gen_capacities, route_hash);
+                    best_route = join(inst.para.time_limit, gen_routes, gen_rcs, gen_costs, gen_capacities, route_hash);
 
 				if(ful < bul)
 					f_limit += step_size;

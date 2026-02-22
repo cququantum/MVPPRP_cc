@@ -474,8 +474,6 @@ public class SetCovering {
      * @return
      */
     public boolean is_feasible(){
-        if(lpc > 1e6)
-            return false;
         for(int i = 0; i < slack_values.length; i++){
             if(Math.abs(slack_values[i]) > 1e-9){
                 return false;
@@ -483,6 +481,13 @@ public class SetCovering {
         }
         if(Math.abs(dur_slack_values) > 1e-9)
             return false;
+        if(caps != null && caps.cap_slack_value != null){
+            for(int i = 0; i < caps.cap_slack_value.size(); i++){
+                if(Math.abs(caps.cap_slack_value.get(i)) > 1e-9){
+                    return false;
+                }
+            }
+        }
         return true;
     }
 
