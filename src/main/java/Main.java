@@ -9,7 +9,7 @@ import java.util.Locale;
 
 public class Main {
     public static void main(String[] args) {
-        String instancePath = "data/MVPRP/MVPRP1_10_6_2.txt";
+        String instancePath = "data/MVPRP/MVPRP1_10_3_2.txt";
         boolean runOriginalAndReformulation = true;
 
         for (String arg : args) {
