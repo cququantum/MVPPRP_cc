@@ -9,7 +9,20 @@ import java.util.Locale;
 
 public class Main {
     public static void main(String[] args) {
-        String instancePath = (args.length > 0) ? args[0] : "data/MVPRP/MVPRP1_10_3_3.txt";
+        String instancePath = "data/MVPRP/MVPRP1_10_6_2.txt";
+        boolean runOriginalAndReformulation = true;
+
+        for (String arg : args) {
+            if ("--skip-baselines".equals(arg)) {
+                runOriginalAndReformulation = false;
+            } else if ("--run-baselines".equals(arg)) {
+                runOriginalAndReformulation = true;
+            } else if (arg.startsWith("--run-baselines=")) {
+                runOriginalAndReformulation = Boolean.parseBoolean(arg.substring("--run-baselines=".length()));
+            } else if (!arg.startsWith("--")) {
+                instancePath = arg;
+            }
+        }
 
         Instance.Options options = Instance.Options.defaults();
         options.distanceMode = Instance.Options.DistanceMode.EUCLIDEAN_FLOAT;
@@ -18,17 +31,35 @@ public class Main {
         try {
             Instance ins = Instance.fromFile(instancePath, options);
 
-            SolveResult originalResult = new OriginalModelSolver().solve(ins);
-            SolveResult reformulationResult = new ReformulationModelSolver().solve(ins);
+            SolveResult originalResult = null;
+            SolveResult reformulationResult = null;
+            if (runOriginalAndReformulation) {
+                originalResult = new OriginalModelSolver().solve(ins);
+                reformulationResult = new ReformulationModelSolver().solve(ins);
+            }
             SolveResult lbbdResult = new LbbdSolver().solve(ins);
 
             System.out.println("Instance: " + instancePath);
             System.out.println("n=" + ins.n + ", l=" + ins.l + ", K=" + ins.K + ", Q=" + format(ins.Q));
-            System.out.println(originalResult.toSummaryLine());
-            System.out.println(reformulationResult.toSummaryLine());
+            System.out.println("runOriginalAndReformulation=" + runOriginalAndReformulation);
+            if (originalResult != null) {
+                System.out.println(originalResult.toSummaryLine());
+            } else {
+                System.out.println("OriginalModel | skipped");
+            }
+            if (reformulationResult != null) {
+                System.out.println(reformulationResult.toSummaryLine());
+            } else {
+                System.out.println("ReformulationModel | skipped");
+            }
             System.out.println(lbbdResult.toSummaryLine());
-            printComparison(originalResult, reformulationResult);
-            printLbbdComparison(reformulationResult, lbbdResult);
+            if (originalResult != null && reformulationResult != null) {
+                printComparison(originalResult, reformulationResult);
+                printLbbdComparison(reformulationResult, lbbdResult);
+            } else {
+                System.out.println("Comparison: skipped because original/reformulation is disabled.");
+                System.out.println("LBBD Comparison: skipped because reformulation is disabled.");
+            }
         } catch (IOException e) {
             throw new RuntimeException("Failed to load instance file: " + instancePath, e);
         }
