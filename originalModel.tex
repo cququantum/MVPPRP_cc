@@ -49,11 +49,12 @@ P_{0t} &\leq L_p, && \forall t \in T && \text{(成品库存容量)}
 \vspace{-1.5ex}
 \begin{align}
 I_{i,t-1} + s_{it} &= q_{it} + I_{it}, && \forall i \in V_S, t \in T && \text{(库存平衡，$t=1$时$I_{i,0}=I_{i0}$)} \\
+I_{i,t-1} + s_{it} &\leq L_i, && \forall i \in V_S, t \in T && \text{(取货前库存容量限制} \\
 q_{it} &\geq I_{i,t-1} + s_{it} - M(1 - z_{it}), && \forall i \in V_S, t \in T && \text{(访问时取全量)} \\
 q_{it} &\leq M z_{it}, && \forall i \in V_S, t \in T && \text{(不访问则不取货)} \\
 I_{it} &\leq M(1 - z_{it}), && \forall i \in V_S, t \in T && \text{(访问后库存为0)} \\
 I_{it} &\geq I_{i,t-1} + s_{it} - M z_{it}, && \forall i \in V_S, t \in T && \text{(不访问时库存累积)} \\
-I_{it} &\leq L_i, && \forall i \in V_S, t \in T && \text{(库存容量限制)}
+% 说明：由库存平衡、q_{it}\ge 0 与取货前库存容量限制可推出 I_{it}\le L_i，故不再单列期末容量约束。
 \end{align}
 
 \subsubsection{工厂原料库存约束}
